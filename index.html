@@ -24,6 +24,7 @@
   width: 100%;
   gap: 24px;
   margin-top: 24px;
+  padding-bottom: 36px;
 }
 
 .frame-block {
@@ -42,12 +43,22 @@
   align-items: center;
   min-height: 260px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  overflow: hidden;
+  max-width: 100%;
+  position: relative;
 }
 
-img {
-  display: block;
+#previewFull img.main-logo,
+#previewBW img.main-logo {
+  height: var(--logo-height, auto);
+}
+
+#previewFull img.main-logo,
+#previewBW img.main-logo {
   width: var(--logo-width, auto);
   height: var(--logo-height, auto);
+  max-width: 100%;
+  object-fit: contain;
 }
 
 .controls {
@@ -157,6 +168,63 @@ h3 {
   flex: 1;          /* each takes 50% */
   min-width: 0;     /* prevents overflow issues */
 }
+.variant-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.variant {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.variant-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #444;
+}
+
+.variant-preview img {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100%;
+  max-height: 60px;
+  display: block;
+}
+
+
+.variant-preview img {
+  max-width: 100%;
+  max-height: 60px;
+  display: block;
+}
+
+.variant-upload {
+  margin-top: 4px;
+  padding: 6px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: #f7f7f7;
+  cursor: pointer;
+}
+
+.variant-upload:hover {
+  background: #eee;
+}
+
+/* Make the small previews draggable affordances */
+.variant-preview {
+  cursor: grab;
+}
+
 
 </style>
 </head>
@@ -166,20 +234,71 @@ h3 {
         <h2>Minimum Size Test</h2>
         <div class="frames">
             <div class="frame-block">
-                <h3>Full Color</h3>
+                <h3>Full color</h3>
                 <div id="previewFull" class="preview-area">
                     <div class="logo-wrap">
-                        <img id="logoFull" src="logo-full-light.svg" alt="Full Color Logo" />
+                        <img id="logoFull" class="main-logo" src="logo-full-light.svg" alt="Full Color Logo" />
                     </div>
                 </div>
             </div>
             <div class="frame-block">
-                <h3>Black & White</h3>
+                <h3>Solid</h3>
                 <div id="previewBW" class="preview-area">
                     <div class="logo-wrap">
-                        <img id="logoBW" src="logo-bw-light.svg" alt="Black & White Logo" />
+                        <img id="logoBW" class="main-logo" src="logo-bw-light.svg" alt="Black & White Logo" />
                     </div>
                 </div>
+            </div>
+        </div>
+        <div class="preview-label">Upload up to 6 custom color variations and drag them to the preview windows.</div>
+        <div class="variant-row">
+            <div class="variant" data-key="fc_light">
+                <div class="variant-label">Colorway 1</div>
+                <div class="variant-preview">
+                    <img alt="Colorway 1" />
+                </div>
+                <button class="variant-upload">Upload artwork</button>
+                <input type="file" accept=".svg" class="variant-input" hidden>
+            </div>
+            <div class="variant" data-key="fc_mid">
+                <div class="variant-label">Colorway 2</div>
+                <div class="variant-preview">
+                    <img alt="Colorway 2" />
+                </div>
+                <button class="variant-upload">Upload artwork</button>
+                <input type="file" accept=".svg" class="variant-input" hidden>
+            </div>
+            <div class="variant" data-key="fc_dark">
+                <div class="variant-label">Colorway 3</div>
+                <div class="variant-preview">
+                    <img alt="Colorway 3" />
+                </div>
+                <button class="variant-upload">Upload artwork</button>
+                <input type="file" accept=".svg" class="variant-input" hidden>
+            </div>
+            <div class="variant" data-key="bw_light">
+                <div class="variant-label">Colorway 4</div>
+                <div class="variant-preview">
+                    <img alt="Colorway 4" />
+                </div>
+                <button class="variant-upload">Upload artwork</button>
+                <input type="file" accept=".svg" class="variant-input" hidden>
+            </div>
+            <div class="variant" data-key="bw_mid">
+                <div class="variant-label">Colorway 5</div>
+                <div class="variant-preview">
+                    <img alt="Colorway 5" />
+                </div>
+                <button class="variant-upload">Upload artwork</button>
+                <input type="file" accept=".svg" class="variant-input" hidden>
+            </div>
+            <div class="variant" data-key="bw_dark">
+                <div class="variant-label">Colorway 6</div>
+                <div class="variant-preview">
+                    <img alt="Colorway 6" />
+                </div>
+                <button class="variant-upload">Upload artwork</button>
+                <input type="file" accept=".svg" class="variant-input" hidden>
             </div>
         </div>
         <div class="control-row">
@@ -207,6 +326,9 @@ h3 {
         </div>
     </div>
     <script>
+    /* -------------------------------------------------------
+   BASE ELEMENTS
+------------------------------------------------------- */
     const widthSlider = document.getElementById("widthSlider");
     const heightSlider = document.getElementById("heightSlider");
 
@@ -222,6 +344,11 @@ h3 {
     const fullWrap = document.querySelector("#previewFull .logo-wrap");
     const bwWrap = document.querySelector("#previewBW .logo-wrap");
 
+    let activeBackground = "light"; // default
+
+    /* -------------------------------------------------------
+       MEASUREMENT + SYNC
+    ------------------------------------------------------- */
     function measureAndSync() {
         requestAnimationFrame(() => {
             const cssW = Math.round(logoFull.getBoundingClientRect().width);
@@ -233,56 +360,99 @@ h3 {
             widthLabel.textContent = `Adjust by width: ${cssW}px/${dpW}dp (CSS/DPS)`;
             heightLabel.textContent = `Adjust by height: ${cssH}px/${dpH}dp (CSS/DPS)`;
 
-
-            widthSlider.value = w;
-            heightSlider.value = h;
+            // NEW: force sliders to reflect the REAL rendered size
+            widthSlider.value = cssW;
+            heightSlider.value = cssH;
         });
     }
 
-    // WIDTH SLIDER
+    /* -------------------------------------------------------
+       SLIDERS
+    ------------------------------------------------------- */
     widthSlider.addEventListener("input", () => {
-        const w = widthSlider.value;
-        document.documentElement.style.setProperty("--logo-width", w + "px");
+        const requestedW = Number(widthSlider.value);
+
+        const containerW = previewFull.getBoundingClientRect().width;
+        const finalW = Math.min(requestedW, containerW);
+
+        // Apply the clamped width
+        document.documentElement.style.setProperty("--logo-width", finalW + "px");
         document.documentElement.style.setProperty("--logo-height", "auto");
+
+        // Keep the slider honest
+        widthSlider.value = Math.round(finalW);
+
         measureAndSync();
     });
 
-    // HEIGHT SLIDER
+
     heightSlider.addEventListener("input", () => {
-        const h = heightSlider.value;
-        document.documentElement.style.setProperty("--logo-height", h + "px");
+        const requestedH = Number(heightSlider.value);
+
+        const containerW = previewFull.getBoundingClientRect().width;
+        const aspect = logoFull.naturalWidth / logoFull.naturalHeight;
+
+        const maxAllowedH = containerW / aspect;
+        const finalH = Math.min(requestedH, maxAllowedH);
+
+        // Apply the clamped height
+        document.documentElement.style.setProperty("--logo-height", finalH + "px");
         document.documentElement.style.setProperty("--logo-width", "auto");
+
+        // Keep the slider honest
+        heightSlider.value = Math.round(finalH);
+
         measureAndSync();
     });
 
-    // BACKGROUND SWITCHING
+    /* -------------------------------------------------------
+       BACKGROUND SWITCHING
+    ------------------------------------------------------- */
     document.querySelectorAll(".bg-toggle button").forEach(btn => {
         btn.addEventListener("click", () => {
             document.querySelectorAll(".bg-toggle button").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
 
-            const bg = btn.dataset.bg;
-            const fullSrc = btn.dataset.full;
-            const bwSrc = btn.dataset.bw;
+            activeBackground = btn.textContent.trim().toLowerCase(); // "light", "mid", "dark"
 
+            const bg = btn.dataset.bg;
             previewFull.style.background = bg;
             previewBW.style.background = bg;
 
-            logoFull.src = fullSrc;
-            logoBW.src = bwSrc;
-
-            measureAndSync();
+            restoreMainLogosForBackground();
         });
     });
 
-    // DENSITY SIMULATION
+    function restoreMainLogosForBackground() {
+        const fcKey = `active_fc_${activeBackground}`;
+        const bwKey = `active_bw_${activeBackground}`;
+
+        const fcSVG = sessionStorage.getItem(fcKey);
+        const bwSVG = sessionStorage.getItem(bwKey);
+
+        if (fcSVG) {
+            setMainLogoFromSVG(fcSVG, "full");
+        } else {
+            logoFull.src = document.querySelector(`.bg-toggle button.active`).dataset.full;
+        }
+
+        if (bwSVG) {
+            setMainLogoFromSVG(bwSVG, "bw");
+        } else {
+            logoBW.src = document.querySelector(`.bg-toggle button.active`).dataset.bw;
+        }
+    }
+
+
+    /* -------------------------------------------------------
+       DENSITY SIMULATION
+    ------------------------------------------------------- */
     document.querySelectorAll(".density-toggle button").forEach(btn => {
         btn.addEventListener("click", () => {
             document.querySelectorAll(".density-toggle button").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
 
             const blur = btn.dataset.blur;
-
             const filterValue = blur === "0px" ? "none" : `blur(${blur})`;
 
             fullWrap.style.filter = filterValue;
@@ -292,12 +462,95 @@ h3 {
         });
     });
 
-    // INITIALIZATION
+    /* -------------------------------------------------------
+       MAIN LOGO SWAP FROM SVG TEXT
+    ------------------------------------------------------- */
+    function setMainLogoFromSVG(svgText, mode) {
+        const blob = new Blob([svgText], { type: "image/svg+xml" });
+        const url = URL.createObjectURL(blob);
+
+        if (mode === "full") {
+            logoFull.src = url;
+        } else if (mode === "bw") {
+            logoBW.src = url;
+        }
+
+        logoFull.onload = () => measureAndSync();
+    }
+
+    /* -------------------------------------------------------
+       VARIANT SYSTEM (6 small previews)
+    ------------------------------------------------------- */
+    function initVariants() {
+        document.querySelectorAll(".variant").forEach(variant => {
+            const key = variant.dataset.key;
+            const uploadBtn = variant.querySelector(".variant-upload");
+            const fileInput = variant.querySelector(".variant-input");
+            const previewImg = variant.querySelector(".variant-preview img");
+            const previewBox = variant.querySelector(".variant-preview");
+
+            /* Upload button → open file picker */
+            uploadBtn.addEventListener("click", () => fileInput.click());
+
+            /* File selected → store + preview */
+            fileInput.addEventListener("change", async () => {
+                const file = fileInput.files[0];
+                if (!file) return;
+
+                const text = await file.text();
+                sessionStorage.setItem(key, text);
+
+                const blob = new Blob([text], { type: "image/svg+xml" });
+                const url = URL.createObjectURL(blob);
+                previewImg.src = url;
+            });
+
+            /* Make small preview draggable */
+            previewBox.setAttribute("draggable", "true");
+
+            previewBox.addEventListener("dragstart", e => {
+                e.dataTransfer.setData("variantKey", key);
+            });
+        });
+
+        /* Make big previews drop targets */
+        makeDropTarget(previewFull, "full");
+        makeDropTarget(previewBW, "bw");
+    }
+
+    function makeDropTarget(targetEl, mode) {
+        targetEl.addEventListener("dragover", e => e.preventDefault());
+
+        targetEl.addEventListener("drop", e => {
+            e.preventDefault();
+            const key = e.dataTransfer.getData("variantKey");
+            if (!key) return;
+
+            const svgText = sessionStorage.getItem(key);
+            if (!svgText) return;
+
+            // Save custom artwork for the active background
+            const storageKey = mode === "full" ?
+                `active_fc_${activeBackground}` :
+                `active_bw_${activeBackground}`;
+
+            sessionStorage.setItem(storageKey, svgText);
+
+            setMainLogoFromSVG(svgText, mode);
+        });
+    }
+
+
+    /* -------------------------------------------------------
+       INITIALIZATION
+    ------------------------------------------------------- */
     window.addEventListener("load", () => {
         logoFull.onload = initializeScale;
         logoBW.onload = initializeScale;
 
         if (logoFull.complete) initializeScale();
+
+        initVariants();
     });
 
     function initializeScale() {
@@ -326,7 +579,7 @@ h3 {
         widthLabel.textContent = `Adjust by width: ${finalW}px`;
         heightLabel.textContent = `Adjust by height: ${finalH}px`;
 
-        // Apply 1× blur AFTER layout + rasterization
+        /* Apply 1× blur after layout */
         requestAnimationFrame(() => {
             const oneXButton = document.querySelector('.density-toggle button[data-blur="0.48px"]');
             if (oneXButton) oneXButton.click();
