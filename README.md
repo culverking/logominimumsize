@@ -23,7 +23,7 @@ Workbench will grow into a multi‑tool environment, including modules for:
 - Adobe Illustrator integration and workflows
 
 ---
-License & Usage
+#### License & Usage
 This project is currently provided for testing and demonstration purposes only.
 All rights are reserved. No permission is granted to copy, modify, distribute, or use this code in any commercial or non‑commercial project.
 A formal license will be added when the suite is ready for release.
