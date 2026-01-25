@@ -181,7 +181,7 @@ font-weight: 800;
     #666 6px
   );
   pointer-events: none;
-  z-index: 15;
+  z-index: 30; /* above rulers and preview image */
 }
 
 .centerline-vertical {
@@ -197,6 +197,7 @@ font-weight: 800;
   top: 50%;
   transform: translateY(-50%);
 }
+
 
 
 /* END PREVIEW AREA */
@@ -602,7 +603,7 @@ document.querySelectorAll('#centerline-chips .chip').forEach(chip => {
                 label.classList.add('ruler-label');
                 label.style.left = i + 'px';
 
-                const value = i - centerX; // center-based
+                const value = Math.abs(i - centerX); // center-based
                 label.textContent = rulerUnit === 'px' ?
                     value :
                     Math.round(value / window.devicePixelRatio);
@@ -623,7 +624,7 @@ document.querySelectorAll('#centerline-chips .chip').forEach(chip => {
                 label.classList.add('ruler-label-vertical');
                 label.style.top = i + 'px';
 
-                const value = i - centerY; // center-based
+                const value = Math.abs(i - centerY); // center-based
                 label.textContent = rulerUnit === 'px' ?
                     value :
                     Math.round(value / window.devicePixelRatio);
