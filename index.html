@@ -3,590 +3,489 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Minimum Size Test</title>
-    <style>
-        body {
-  font-family: sans-serif;
-  background: #f5f5f5;
-  margin: 0;
+    <title>Workbench Wireframe</title>
+    <style>* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+background: #111;
+color: #ddd;
+}
+.app {
+display: flex;
+flex-direction: column;
+height: 100vh;
+}
+.topbar {
+height: 40px;
+background: #181818;
+border-bottom: 1px solid #262626;
+display: flex;
+align-items: center;
+padding: 20pt 16px;
+font-size: 13px;
+letter-spacing: 0.03em;
+text-transform: uppercase;
+}
+.topbar-title {
+font-weight: 600;
+margin-right: 32px;
+font-size: 18pt;
+}
+.topbar-nav {
+display: flex;
+gap: 16px;
+font-size: 12px;
+opacity: 0.35;
+}
+.topbar-nav span.active {
+opacity: 1;
+color: white;
+font-weight: 800;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  background: #141414;
+}
+/* ──────────────────────────────── */
+/* PREVIEW AREA */
+.preview {
+  flex: 0 0 auto;
+  width: 80vw;
+  border-right: 1px solid #262626;
+  display: flex;
+  align-items: center;      /* keeps preview centered vertically */
+  justify-content: center;  /* keeps preview centered horizontally */
   padding: 24px;
-  color: #222;
-}
-
-.container {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-/* Two equal-width frames */
-.frames {
-  display: flex;
-  width: 100%;
-  gap: 24px;
-  margin-top: 24px;
-  padding-bottom: 36px;
-}
-
-.frame-block {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.preview-area {
-  flex: 1;
-  background: white;
-  border-radius: 8px;
-  padding: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 260px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  overflow: hidden;
-  max-width: 100%;
   position: relative;
 }
 
-#previewFull img.main-logo,
-#previewBW img.main-logo {
-  height: var(--logo-height, auto);
+.preview-ruler-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-#previewFull img.main-logo,
-#previewBW img.main-logo {
-  width: var(--logo-width, auto);
-  height: var(--logo-height, auto);
-  max-width: 100%;
-  object-fit: contain;
-}
-
-.controls {
-  margin-top: 24px;
-}
-
-input[type="range"] {
+/* Preview box */
+.preview-inner {
+  max-width: 800px;
+  max-height: 800px;
   width: 100%;
-}
-
-h3 {
-  margin-bottom: 8px;
-  font-size: 16px;
-  opacity: 0.8;
-}
-
-/* ----------------------------- */
-/* CONTROL ROW (Preview + BG)    */
-/* ----------------------------- */
-
-.control-row {
+  height: 100%;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #1b1b1b;
   display: flex;
-  align-items: flex-start;
-  gap: 32px;
-  margin-top: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  position: relative;
+  z-index: 10; /* sits above rulers */
 }
 
-/* Shared structure for both groups */
-.density-toggle,
-.bg-toggle {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* Horizontal ruler */
+.ruler-horizontal {
+  position: absolute;
+  top: 0;
+  left: 20px; /* leave space for vertical ruler */
+  height: 20px;
+  width: calc(100% - 20px);
+  background: #1a1a1a;
+  border-bottom: 1px solid #333;
+  pointer-events: none;
+  z-index: 5;
 }
 
-/* Label above each group */
-.preview-label {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: #333;
+/* Vertical ruler */
+.ruler-vertical {
+  position: absolute;
+  top: 20px; /* leave space for horizontal ruler */
+  left: 0;
+  width: 20px;
+  height: calc(100% - 20px);
+  background: #1a1a1a;
+  border-right: 1px solid #333;
+  pointer-events: none;
+  z-index: 5;
 }
 
-/* Horizontal button rows */
-.density-toggle button,
-.bg-toggle button {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  background: #ddd;
-  white-space: nowrap;
+/* Clean corner square */
+.ruler-corner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  background: #141414; /* matches panel background */
+  z-index: 6;
 }
 
-.density-toggle button.active,
-.bg-toggle button.active {
-  background: #333;
-  color: white;
+/* Tick marks */
+.ruler-horizontal .tick,
+.ruler-vertical .tick {
+  position: absolute;
+  background: #666;
 }
 
-/* Make buttons sit horizontally */
-.density-toggle,
-.bg-toggle {
-  width: auto;
+.ruler-horizontal .tick {
+  width: 1px;
+  bottom: 0;
 }
 
-.density-toggle button,
-.bg-toggle button {
-  flex: 0 0 auto;
+.ruler-vertical .tick {
+  height: 1px;
+  right: 0;
 }
 
-.density-toggle,
-.bg-toggle {
-  display: flex;
+.ruler-horizontal .tick.major,
+.ruler-vertical .tick.major {
+  background: #aaa;
 }
 
-.density-toggle > button,
-.bg-toggle > button {
-  margin-right: 8px;
-}
+.ruler-horizontal .tick.major { height: 10px; }
+.ruler-horizontal .tick.minor { height: 5px; }
 
-.density-toggle > button:last-child,
-.bg-toggle > button:last-child {
-  margin-right: 0;
+.ruler-vertical .tick.major { width: 10px; }
+.ruler-vertical .tick.minor { width: 5px; }
+/* END PREVIEW AREA */
+/* ──────────────────────────────── */
+.inspector {
+padding: 16px 18px;
+background: #151515;
+display: flex;
+flex-direction: column;
+gap: 16px;
+font-size: 13px;
 }
-.button-row {
-  display: flex;
-  gap: 8px;
+.inspector-section {
+border-bottom: 1px solid #262626;
+padding-bottom: 12px;
+margin-bottom: 8px;
 }
-
-.button-row button {
-  flex: 1;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  background: #ddd;
-  white-space: nowrap;
+.inspector-section:last-child {
+border-bottom: none;
+margin-bottom: 0;
+padding-bottom: 0;
 }
-
-.button-row button.active {
-  background: #333;
-  color: white;
+.section-title {
+font-size: 11px;
+text-transform: uppercase;
+letter-spacing: 0.08em;
+color: #888;
+margin-bottom: 8px;
 }
-.control-row > .density-toggle,
-.control-row > .bg-toggle {
-  flex: 1;          /* each takes 50% */
-  min-width: 0;     /* prevents overflow issues */
+.field {
+display: flex;
+flex-direction: column;
+gap: 4px;
+margin-bottom: 8px;
+padding-top: 8px;
+padding-bottom: 8px;
 }
-.variant-row {
-  display: flex;
-  gap: 16px;
-  margin-top: 16px;
+.field label {
+font-size: 11px;
+text-transform: uppercase;
+letter-spacing: 0.08em;
+color: #999;
 }
-
-.variant {
-  flex: 1;
-  background: #ffffff;
-  border-radius: 6px;
-  padding: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.field input,
+.field select {
+background: #1d1d1d;
+border: 1px solid #333;
+border-radius: 4px;
+padding: 6px 8px;
+color: #ddd;
+font-size: 12px;
 }
-
-.variant-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #444;
+.chips {
+display: flex;
+gap: 6px;
+flex-wrap: wrap;
 }
-
-.variant-preview img {
-  width: auto !important;
-  height: auto !important;
-  max-width: 100%;
-  max-height: 60px;
-  display: block;
+.chip {
+padding: 4px 8px;
+border-radius: 999px;
+border: 1px solid #333;
+font-size: 11px;
+color: #aaa;
+cursor: default;
 }
-
-
-.variant-preview img {
-  max-width: 100%;
-  max-height: 60px;
-  display: block;
+.chip.active {
+border-color: #4f8cff;
+color: #dbe5ff;
+background: #1b2640;
 }
-
-.variant-upload {
-  margin-top: 4px;
-  padding: 6px 8px;
-  font-size: 12px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  background: #f7f7f7;
-  cursor: pointer;
+.statusbar {
+height: 28px;
+background: #181818;
+border-top: 1px solid #262626;
+display: flex;
+align-items: center;
+padding: 0 12px;
+font-size: 11px;
+color: #888;
+gap: 16px;
 }
-
-.variant-upload:hover {
-  background: #eee;
+.status-label {
+color: #666;
+text-transform: uppercase;
+letter-spacing: 0.08em;
+font-size: 10px;
+margin-right: 4px;
 }
-
-/* Make the small previews draggable affordances */
-.variant-preview {
-  cursor: grab;
+.divider {
+width: 6px;
+cursor: col-resize;
+background: #1a1a1a;
+border-left: 1px solid #262626;
+border-right: 1px solid #262626;
 }
-
+.divider:hover {
+background: #222;
+}
+/* Background modes for preview */
+.bg-light  { background: #f4f2f0; color: #111; }
+.bg-mid    { background: #888;   color: #111; }
+.bg-dark   { background: #1b1b1b; color: #ddd; }
 
 </style>
 </head>
 
 <body>
-    <div class="container">
-        <h2>Minimum Size Test</h2>
-        <div class="frames">
-            <div class="frame-block">
-                <h3>Full color</h3>
-                <div id="previewFull" class="preview-area">
-                    <div class="logo-wrap">
-                        <img id="logoFull" class="main-logo" src="logo-full-light.svg" alt="Full Color Logo" />
+    <div class="app">
+        <div class="topbar">
+            <div class="topbar-title">Workbench</div>
+            <div class="topbar-nav">
+                <span class="active">Minimum Size Tester</span>
+                <span>Contrast Lab</span>
+                <span>Export Engine</span>
+                <span>Settings</span>
+            </div>
+        </div>
+        <div class="main">
+            <div class="preview">
+                <div class="preview-ruler-wrapper">
+                    <!-- Horizontal ruler -->
+                    <div class="ruler-horizontal" id="ruler-h"></div>
+                    <!-- Vertical ruler -->
+                    <div class="ruler-vertical" id="ruler-v"></div>
+                    <!-- Corner square (clears intersection) -->
+                    <div class="ruler-corner"></div>
+                    <!-- Centered preview box -->
+                    <div class="preview-inner" id="preview-area">
+                        <div id="preview-placeholder">…</div>
+                        <img id="preview-image" style="display:none; max-width:100%; max-height:100%;" />
                     </div>
                 </div>
             </div>
-            <div class="frame-block">
-                <h3>Solid</h3>
-                <div id="previewBW" class="preview-area">
-                    <div class="logo-wrap">
-                        <img id="logoBW" class="main-logo" src="logo-bw-light.svg" alt="Black & White Logo" />
+            <div class="divider"></div>
+            <aside class="inspector">
+                <div class="inspector-section">
+                    <div class="section-title">Display Density Simulation</div>
+                    <div class="chips">
+                        <div class="chip active">Low Resolution / LDPI / Soft</div>
+                        <div class="chip">High Resolution / HDPI / Crisp</div>
                     </div>
                 </div>
-            </div>
+                <div class="inspector-section">
+                    <div class="section-title">CSS size</div>
+                    <div class="field">
+                        <label>CSS width</label>
+                        <input type="text" placeholder="e.g. 24 (CSS px)" />
+                    </div>
+                    <div class="field">
+                        <label>CSS height</label>
+                        <input type="text" placeholder="Auto or explicit" />
+                    </div>
+                </div>
+                <div class="inspector-section">
+                    <div class="section-title">Rendered size</div>
+                    <div class="field">
+                        <label>Physical pixels</label>
+                        <input type="text" value="48 × 48 px @ 2x" readonly />
+                    </div>
+                </div>
+                <div class="inspector-section">
+                    <div class="section-title">Background</div>
+                    <div class="chips" id="background-chips">
+                        <div class="chip active" data-bg="light">Light</div>
+                        <div class="chip" data-bg="mid">Mid</div>
+                        <div class="chip" data-bg="dark">Dark</div>
+                        <div class="chip" data-bg="custom">Custom</div>
+                    </div>
+                    <div class="field" id="custom-bg-field">
+                        <label>Custom Hex</label>
+                        <input type="text" id="custom-bg-input" placeholder="#RRGGBB" />
+                    </div>
+                </div>
+                <div class="inspector-section">
+                    <div class="section-title">Validation</div>
+                    <div class="field">
+                        <label>Result</label>
+                        <input type="text" value="Pass at 24 CSS px / 2x" readonly />
+                    </div>
+                </div>
+            </aside>
         </div>
-        <div class="preview-label">Upload up to 6 custom color variations and drag them to the preview windows.</div>
-        <div class="variant-row">
-            <div class="variant" data-key="fc_light">
-                <div class="variant-label">Colorway 1</div>
-                <div class="variant-preview">
-                    <img alt="Colorway 1" />
-                </div>
-                <button class="variant-upload">Upload artwork</button>
-                <input type="file" accept=".svg" class="variant-input" hidden>
-            </div>
-            <div class="variant" data-key="fc_mid">
-                <div class="variant-label">Colorway 2</div>
-                <div class="variant-preview">
-                    <img alt="Colorway 2" />
-                </div>
-                <button class="variant-upload">Upload artwork</button>
-                <input type="file" accept=".svg" class="variant-input" hidden>
-            </div>
-            <div class="variant" data-key="fc_dark">
-                <div class="variant-label">Colorway 3</div>
-                <div class="variant-preview">
-                    <img alt="Colorway 3" />
-                </div>
-                <button class="variant-upload">Upload artwork</button>
-                <input type="file" accept=".svg" class="variant-input" hidden>
-            </div>
-            <div class="variant" data-key="bw_light">
-                <div class="variant-label">Colorway 4</div>
-                <div class="variant-preview">
-                    <img alt="Colorway 4" />
-                </div>
-                <button class="variant-upload">Upload artwork</button>
-                <input type="file" accept=".svg" class="variant-input" hidden>
-            </div>
-            <div class="variant" data-key="bw_mid">
-                <div class="variant-label">Colorway 5</div>
-                <div class="variant-preview">
-                    <img alt="Colorway 5" />
-                </div>
-                <button class="variant-upload">Upload artwork</button>
-                <input type="file" accept=".svg" class="variant-input" hidden>
-            </div>
-            <div class="variant" data-key="bw_dark">
-                <div class="variant-label">Colorway 6</div>
-                <div class="variant-preview">
-                    <img alt="Colorway 6" />
-                </div>
-                <button class="variant-upload">Upload artwork</button>
-                <input type="file" accept=".svg" class="variant-input" hidden>
-            </div>
-        </div>
-        <div class="control-row">
-            <div class="density-toggle">
-                <div class="preview-label">Preview mode</div>
-                <div class="button-row">
-                    <button data-blur="0.48px" data-contrast="none">Soft / Low Res / LDPI</button>
-                    <button data-blur="0px" data-contrast="none">Crisp / High Res / HDPI</button>
-                </div>
-            </div>
-            <div class="bg-toggle">
-                <div class="preview-label">Background</div>
-                <div class="button-row">
-                    <button data-bg="#ffffff" data-full="logo-full-light.svg" data-bw="logo-bw-light.svg" class="active">Light</button>
-                    <button data-bg="#e0e0e0" data-full="logo-full-light.svg" data-bw="logo-bw-light.svg">Mid</button>
-                    <button data-bg="#1a1a1a" data-full="logo-full-dark.svg" data-bw="logo-bw-dark.svg">Dark</button>
-                </div>
-            </div>
-        </div>
-        <div class="controls">
-            <label id="widthLabel" class="slider-label">Adjust by width: 0px</label>
-            <input id="widthSlider" type="range" min="8" max="300" step="1">
-            <label id="heightLabel" class="slider-label">Adjust by height: 0px</label>
-            <input id="heightSlider" type="range" min="8" max="300" step="1">
+        <div class="statusbar">
+            <div><span class="status-label">Status</span>Ready</div>
+            <div><span class="status-label">CSS size</span>24 × 24</div>
+            <div><span class="status-label">DPR</span>2.0 (HDPI)</div>
+            <div><span class="status-label">Rendered</span>48 × 48 px</div>
+            <div><span class="status-label">Background</span>Light</div>
         </div>
     </div>
     <script>
-    /* -------------------------------------------------------
-   BASE ELEMENTS
-------------------------------------------------------- */
-    const widthSlider = document.getElementById("widthSlider");
-    const heightSlider = document.getElementById("heightSlider");
+    const divider = document.querySelector('.divider');
+    const preview = document.querySelector('.preview');
+    const inspector = document.querySelector('.inspector');
 
-    const widthLabel = document.getElementById("widthLabel");
-    const heightLabel = document.getElementById("heightLabel");
+    let isDragging = false;
 
-    const logoFull = document.getElementById("logoFull");
-    const logoBW = document.getElementById("logoBW");
+    divider.addEventListener('mousedown', () => {
+        isDragging = true;
+        document.body.style.userSelect = 'none';
+    });
 
-    const previewFull = document.getElementById("previewFull");
-    const previewBW = document.getElementById("previewBW");
+    window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
 
-    const fullWrap = document.querySelector("#previewFull .logo-wrap");
-    const bwWrap = document.querySelector("#previewBW .logo-wrap");
+        const minWidth = 200; // minimum preview width
+        const maxWidth = window.innerWidth - 200; // minimum inspector width
 
-    let activeBackground = "light"; // default
+        const newPreviewWidth = Math.min(Math.max(e.clientX, minWidth), maxWidth);
 
-    /* -------------------------------------------------------
-       MEASUREMENT + SYNC
-    ------------------------------------------------------- */
-    function measureAndSync() {
-        requestAnimationFrame(() => {
-            const cssW = Math.round(logoFull.getBoundingClientRect().width);
-            const cssH = Math.round(logoFull.getBoundingClientRect().height);
+        preview.style.width = newPreviewWidth + 'px';
+    });
 
-            const dpW = Math.round(cssW / window.devicePixelRatio);
-            const dpH = Math.round(cssH / window.devicePixelRatio);
+    window.addEventListener('mouseup', () => {
+        isDragging = false;
+        document.body.style.userSelect = '';
+    });
 
-            widthLabel.textContent = `Adjust by width: ${cssW}px/${dpW}dp (CSS/DPS)`;
-            heightLabel.textContent = `Adjust by height: ${cssH}px/${dpH}dp (CSS/DPS)`;
+    // BACKGROUND CHIP LOGIC
+    const bgChips = document.querySelectorAll('#background-chips .chip');
+    const previewArea = document.getElementById('preview-area');
+    const customInput = document.getElementById('custom-bg-input');
 
-            // NEW: force sliders to reflect the REAL rendered size
-            widthSlider.value = cssW;
-            heightSlider.value = cssH;
-        });
+    // Helper: activate a chip
+    function activateChip(mode) {
+        bgChips.forEach(c => c.classList.remove('active'));
+        const chip = document.querySelector(`.chip[data-bg="${mode}"]`);
+        if (chip) chip.classList.add('active');
     }
 
-    /* -------------------------------------------------------
-       SLIDERS
-    ------------------------------------------------------- */
-    widthSlider.addEventListener("input", () => {
-        const requestedW = Number(widthSlider.value);
+    // Helper: apply background mode
+    function applyBackground(mode) {
+        previewArea.classList.remove('bg-light', 'bg-mid', 'bg-dark');
+        previewArea.style.background = '';
 
-        const containerW = previewFull.getBoundingClientRect().width;
-        const finalW = Math.min(requestedW, containerW);
+        if (mode === 'light') previewArea.classList.add('bg-light');
+        if (mode === 'mid') previewArea.classList.add('bg-mid');
+        if (mode === 'dark') previewArea.classList.add('bg-dark');
 
-        // Apply the clamped width
-        document.documentElement.style.setProperty("--logo-width", finalW + "px");
-        document.documentElement.style.setProperty("--logo-height", "auto");
-
-        // Keep the slider honest
-        widthSlider.value = Math.round(finalW);
-
-        measureAndSync();
-    });
-
-
-    heightSlider.addEventListener("input", () => {
-        const requestedH = Number(heightSlider.value);
-
-        const containerW = previewFull.getBoundingClientRect().width;
-        const aspect = logoFull.naturalWidth / logoFull.naturalHeight;
-
-        const maxAllowedH = containerW / aspect;
-        const finalH = Math.min(requestedH, maxAllowedH);
-
-        // Apply the clamped height
-        document.documentElement.style.setProperty("--logo-height", finalH + "px");
-        document.documentElement.style.setProperty("--logo-width", "auto");
-
-        // Keep the slider honest
-        heightSlider.value = Math.round(finalH);
-
-        measureAndSync();
-    });
-
-    /* -------------------------------------------------------
-       BACKGROUND SWITCHING
-    ------------------------------------------------------- */
-    document.querySelectorAll(".bg-toggle button").forEach(btn => {
-        btn.addEventListener("click", () => {
-            document.querySelectorAll(".bg-toggle button").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-
-            activeBackground = btn.textContent.trim().toLowerCase(); // "light", "mid", "dark"
-
-            const bg = btn.dataset.bg;
-            previewFull.style.background = bg;
-            previewBW.style.background = bg;
-
-            restoreMainLogosForBackground();
-        });
-    });
-
-    function restoreMainLogosForBackground() {
-        const fcKey = `active_fc_${activeBackground}`;
-        const bwKey = `active_bw_${activeBackground}`;
-
-        const fcSVG = sessionStorage.getItem(fcKey);
-        const bwSVG = sessionStorage.getItem(bwKey);
-
-        if (fcSVG) {
-            setMainLogoFromSVG(fcSVG, "full");
-        } else {
-            logoFull.src = document.querySelector(`.bg-toggle button.active`).dataset.full;
-        }
-
-        if (bwSVG) {
-            setMainLogoFromSVG(bwSVG, "bw");
-        } else {
-            logoBW.src = document.querySelector(`.bg-toggle button.active`).dataset.bw;
+        if (mode === 'custom') {
+            const val = customInput.value.trim();
+            if (/^#([0-9A-Fa-f]{3}){1,2}$/.test(val)) {
+                previewArea.style.background = val;
+            }
         }
     }
 
-
-    /* -------------------------------------------------------
-       DENSITY SIMULATION
-    ------------------------------------------------------- */
-    document.querySelectorAll(".density-toggle button").forEach(btn => {
-        btn.addEventListener("click", () => {
-            document.querySelectorAll(".density-toggle button").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-
-            const blur = btn.dataset.blur;
-            const filterValue = blur === "0px" ? "none" : `blur(${blur})`;
-
-            fullWrap.style.filter = filterValue;
-            bwWrap.style.filter = filterValue;
-
-            measureAndSync();
+    // Clicking chips
+    bgChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const mode = chip.dataset.bg;
+            activateChip(mode);
+            applyBackground(mode);
         });
     });
 
-    /* -------------------------------------------------------
-       MAIN LOGO SWAP FROM SVG TEXT
-    ------------------------------------------------------- */
-    function setMainLogoFromSVG(svgText, mode) {
-        const blob = new Blob([svgText], { type: "image/svg+xml" });
-        const url = URL.createObjectURL(blob);
+    // Typing into custom hex field auto-selects Custom
+    customInput.addEventListener('input', () => {
+        activateChip('custom');
+        applyBackground('custom');
+    });
+    // DRAG & DROP IMAGE LOGIC
+    const previewAreaEl = document.getElementById('preview-area');
+    const previewImg = document.getElementById('preview-image');
+    const previewPlaceholder = document.getElementById('preview-placeholder');
 
-        if (mode === "full") {
-            logoFull.src = url;
-        } else if (mode === "bw") {
-            logoBW.src = url;
+    // Prevent browser from opening the file
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        previewAreaEl.addEventListener(eventName, e => e.preventDefault());
+        previewAreaEl.addEventListener(eventName, e => e.stopPropagation());
+    });
+
+    // Highlight on dragover
+    previewAreaEl.addEventListener('dragover', () => {
+        previewAreaEl.classList.add('dragover');
+    });
+
+    // Remove highlight
+    previewAreaEl.addEventListener('dragleave', () => {
+        previewAreaEl.classList.remove('dragover');
+    });
+
+    // Handle drop
+    previewAreaEl.addEventListener('drop', e => {
+        previewAreaEl.classList.remove('dragover');
+
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+
+        const allowed = ['image/svg+xml', 'image/png'];
+        if (!allowed.includes(file.type)) {
+            alert('Please drop an SVG or PNG file.');
+            return;
         }
 
-        logoFull.onload = () => measureAndSync();
-    }
-
-    /* -------------------------------------------------------
-       VARIANT SYSTEM (6 small previews)
-    ------------------------------------------------------- */
-    function initVariants() {
-        document.querySelectorAll(".variant").forEach(variant => {
-            const key = variant.dataset.key;
-            const uploadBtn = variant.querySelector(".variant-upload");
-            const fileInput = variant.querySelector(".variant-input");
-            const previewImg = variant.querySelector(".variant-preview img");
-            const previewBox = variant.querySelector(".variant-preview");
-
-            /* Upload button → open file picker */
-            uploadBtn.addEventListener("click", () => fileInput.click());
-
-            /* File selected → store + preview */
-            fileInput.addEventListener("change", async () => {
-                const file = fileInput.files[0];
-                if (!file) return;
-
-                const text = await file.text();
-                sessionStorage.setItem(key, text);
-
-                const blob = new Blob([text], { type: "image/svg+xml" });
-                const url = URL.createObjectURL(blob);
-                previewImg.src = url;
-            });
-
-            /* Make small preview draggable */
-            previewBox.setAttribute("draggable", "true");
-
-            previewBox.addEventListener("dragstart", e => {
-                e.dataTransfer.setData("variantKey", key);
-            });
-        });
-
-        /* Make big previews drop targets */
-        makeDropTarget(previewFull, "full");
-        makeDropTarget(previewBW, "bw");
-    }
-
-    function makeDropTarget(targetEl, mode) {
-        targetEl.addEventListener("dragover", e => e.preventDefault());
-
-        targetEl.addEventListener("drop", e => {
-            e.preventDefault();
-            const key = e.dataTransfer.getData("variantKey");
-            if (!key) return;
-
-            const svgText = sessionStorage.getItem(key);
-            if (!svgText) return;
-
-            // Save custom artwork for the active background
-            const storageKey = mode === "full" ?
-                `active_fc_${activeBackground}` :
-                `active_bw_${activeBackground}`;
-
-            sessionStorage.setItem(storageKey, svgText);
-
-            setMainLogoFromSVG(svgText, mode);
-        });
-    }
-
-
-    /* -------------------------------------------------------
-       INITIALIZATION
-    ------------------------------------------------------- */
-    window.addEventListener("load", () => {
-        logoFull.onload = initializeScale;
-        logoBW.onload = initializeScale;
-
-        if (logoFull.complete) initializeScale();
-
-        initVariants();
+        const reader = new FileReader();
+        reader.onload = event => {
+            previewImg.src = event.target.result;
+            previewImg.style.display = 'block';
+            previewPlaceholder.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
     });
 
-    function initializeScale() {
-        const preview = previewFull.getBoundingClientRect();
+    //RULER
+    function drawRulers() {
+        const previewArea = document.getElementById('preview-area');
+        const rect = previewArea.getBoundingClientRect();
 
-        const naturalW = logoFull.naturalWidth;
-        const naturalH = logoFull.naturalHeight;
+        const hRuler = document.getElementById('ruler-h');
+        const vRuler = document.getElementById('ruler-v');
 
-        const targetW = preview.width * 0.5;
-        const targetH = preview.height * 0.5;
+        hRuler.innerHTML = '';
+        vRuler.innerHTML = '';
 
-        const scaleW = targetW / naturalW;
-        const scaleH = targetH / naturalH;
+        const width = rect.width;
+        const height = rect.height;
 
-        const scale = Math.min(scaleW, scaleH);
+        // Horizontal ticks
+        for (let x = 0; x < width; x += 10) {
+            const tick = document.createElement('div');
+            tick.classList.add('tick', x % 50 === 0 ? 'major' : 'minor');
+            tick.style.left = x + 'px';
+            hRuler.appendChild(tick);
+        }
 
-        const finalW = Math.round(naturalW * scale);
-        const finalH = Math.round(naturalH * scale);
-
-        document.documentElement.style.setProperty("--logo-width", finalW + "px");
-        document.documentElement.style.setProperty("--logo-height", finalH + "px");
-
-        widthSlider.value = finalW;
-        heightSlider.value = finalH;
-
-        widthLabel.textContent = `Adjust by width: ${finalW}px`;
-        heightLabel.textContent = `Adjust by height: ${finalH}px`;
-
-        /* Apply 1× blur after layout */
-        requestAnimationFrame(() => {
-            const oneXButton = document.querySelector('.density-toggle button[data-blur="0.48px"]');
-            if (oneXButton) oneXButton.click();
-        });
-
-        measureAndSync();
+        // Vertical ticks
+        for (let y = 0; y < height; y += 10) {
+            const tick = document.createElement('div');
+            tick.classList.add('tick', y % 50 === 0 ? 'major' : 'minor');
+            tick.style.top = y + 'px';
+            vRuler.appendChild(tick);
+        }
     }
+
+    window.addEventListener('load', drawRulers);
+    window.addEventListener('resize', drawRulers);
+    window.addEventListener('mousemove', () => { if (isDragging) drawRulers(); });
     </script>
 </body>
 
