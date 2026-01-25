@@ -80,7 +80,7 @@ font-weight: 800;
   width: 100%;
   height: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: 8px;
+  border-radius: 0;
   border: 1px solid #333;
   background: #1b1b1b;
   display: flex;
@@ -98,7 +98,7 @@ font-weight: 800;
   position: absolute;
   background: #1a1a1a;
   pointer-events: none;
-  z-index: 5;
+  z-index: 20; /* ABOVE preview */
 }
 
 /* Horizontal ruler */
@@ -119,7 +119,7 @@ font-weight: 800;
   width: 20px;
   height: 20px;
   background: #141414;
-  z-index: 6;
+  z-index: 30;
 }
 
 /* Tick marks */
@@ -168,6 +168,36 @@ font-weight: 800;
   transform: translateY(50%) rotate(-90deg);
   right: 2px;
 }
+
+/* Centerlines */
+.centerline-vertical,
+.centerline-horizontal {
+  position: absolute;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 4px,
+    #666 4px,
+    #666 6px
+  );
+  pointer-events: none;
+  z-index: 15;
+}
+
+.centerline-vertical {
+  width: 1px;
+  height: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.centerline-horizontal {
+  height: 1px;
+  width: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 
 /* END PREVIEW AREA */
 /* ──────────────────────────────── */
@@ -287,25 +317,26 @@ background: #222;
         </div>
         <div class="main">
             <div class="preview">
-    <div class="preview-ruler-wrapper">
-
-        <div class="ruler-horizontal" id="ruler-h"></div>
-        <div class="ruler-vertical" id="ruler-v"></div>
-        <div class="ruler-corner"></div>
-
-        <div class="preview-inner" id="preview-area">
-            <div id="preview-placeholder">
-                Drop SVG or PNG here<br /><br />
-                • Renders at CSS size<br />
-                • Applies DPR<br />
-                • Background modes<br />
-                • Pixel grid (future)
+                <div class="preview-ruler-wrapper">
+                    <!-- Rulers hugging preview -->
+                    <div class="ruler-horizontal" id="ruler-h"></div>
+                    <div class="ruler-vertical" id="ruler-v"></div>
+                    <div class="ruler-corner"></div>
+                    <!-- Preview box (max 800px) -->
+                    <div class="preview-inner" id="preview-area">
+                        <div class="centerline-vertical"></div>
+                        <div class="centerline-horizontal"></div>
+                        <div id="preview-placeholder">
+                            Drop SVG or PNG here<br /><br />
+                            • Renders at CSS size<br />
+                            • Applies DPR<br />
+                            • Background modes<br />
+                            • Pixel grid (future)
+                        </div>
+                        <img id="preview-image" style="display:none; max-width:100%; max-height:100%;" />
+                    </div>
+                </div>
             </div>
-            <img id="preview-image" style="display:none; max-width:100%; max-height:100%;" />
-        </div>
-
-    </div>
-</div>
             <div class="divider"></div>
             <aside class="inspector">
                 <div class="inspector-section">
@@ -316,12 +347,19 @@ background: #222;
                     </div>
                 </div>
                 <div class="inspector-section">
-    <div class="section-title">Ruler Increment</div>
-    <div class="chips" id="ruler-unit-chips">
-        <div class="chip active" data-unit="px">CSS Pixels</div>
-        <div class="chip" data-unit="dp">DPs</div>
-    </div>
-</div>
+                    <div class="section-title">Ruler Increment</div>
+                    <div class="chips" id="ruler-unit-chips">
+                        <div class="chip active" data-unit="px">CSS Pixels</div>
+                        <div class="chip" data-unit="dp">DPs</div>
+                    </div>
+                </div>
+                <div class="inspector-section">
+                    <div class="section-title">Centerlines</div>
+                    <div class="chips" id="centerline-chips">
+                        <div class="chip active" data-center="on">On</div>
+                        <div class="chip" data-center="off">Off</div>
+                    </div>
+                </div>
                 <div class="inspector-section">
                     <div class="section-title">Rendered size</div>
                     <div class="field">
@@ -360,214 +398,244 @@ background: #222;
         </div>
     </div>
     <script>
-/* ──────────────────────────────── */
-/* DIVIDER RESIZE */
-/* ──────────────────────────────── */
+    /* ──────────────────────────────── */
+    /* DIVIDER RESIZE */
+    /* ──────────────────────────────── */
 
-const divider = document.querySelector('.divider');
-const preview = document.querySelector('.preview');
-let isDragging = false;
+    const divider = document.querySelector('.divider');
+    const preview = document.querySelector('.preview');
+    let isDragging = false;
 
-divider.addEventListener('mousedown', () => {
-    isDragging = true;
-    document.body.style.userSelect = 'none';
-});
+    divider.addEventListener('mousedown', () => {
+        isDragging = true;
+        document.body.style.userSelect = 'none';
+    });
 
-window.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
+    window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
 
-    const minWidth = 200;
-    const maxWidth = window.innerWidth - 260;
+        const minWidth = 200;
+        const maxWidth = window.innerWidth - 260;
 
-    const newPreviewWidth = Math.min(Math.max(e.clientX, minWidth), maxWidth);
-    preview.style.width = newPreviewWidth + 'px';
+        const newPreviewWidth = Math.min(Math.max(e.clientX, minWidth), maxWidth);
+        preview.style.width = newPreviewWidth + 'px';
 
-    drawRulers();
-});
+        drawRulers();
+    });
 
-window.addEventListener('mouseup', () => {
-    isDragging = false;
-    document.body.style.userSelect = '';
-});
+    window.addEventListener('mouseup', () => {
+        isDragging = false;
+        document.body.style.userSelect = '';
+    });
 
-/* ──────────────────────────────── */
-/* RULER UNIT TOGGLE */
-/* ──────────────────────────────── */
+    /* ──────────────────────────────── */
+    /* RULER UNIT TOGGLE */
+    /* ──────────────────────────────── */
 
-let rulerUnit = 'px';
+    let rulerUnit = 'px';
 
-document.querySelectorAll('#ruler-unit-chips .chip').forEach(chip => {
+    document.querySelectorAll('#ruler-unit-chips .chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('#ruler-unit-chips .chip')
+                .forEach(c => c.classList.remove('active'));
+
+            chip.classList.add('active');
+            rulerUnit = chip.dataset.unit;
+
+            drawRulers();
+        });
+    });
+
+    /* ──────────────────────────────── */
+    /* BACKGROUND CHIPS */
+    /* ──────────────────────────────── */
+
+    const bgChips = document.querySelectorAll('#background-chips .chip');
+    const previewArea = document.getElementById('preview-area');
+    const customInput = document.getElementById('custom-bg-input');
+
+    function activateChip(mode) {
+        bgChips.forEach(c => c.classList.remove('active'));
+        const chip = document.querySelector(`.chip[data-bg="${mode}"]`);
+        if (chip) chip.classList.add('active');
+    }
+
+    function applyBackground(mode) {
+        previewArea.classList.remove('bg-light', 'bg-mid', 'bg-dark');
+        previewArea.style.background = '';
+
+        if (mode === 'light') previewArea.classList.add('bg-light');
+        if (mode === 'mid') previewArea.classList.add('bg-mid');
+        if (mode === 'dark') previewArea.classList.add('bg-dark');
+
+        if (mode === 'custom') {
+            const val = customInput.value.trim();
+            if (/^#([0-9A-Fa-f]{3}){1,2}$/.test(val)) {
+                previewArea.style.background = val;
+            }
+        }
+    }
+
+    bgChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const mode = chip.dataset.bg;
+            activateChip(mode);
+            applyBackground(mode);
+        });
+    });
+
+    customInput.addEventListener('input', () => {
+        activateChip('custom');
+        applyBackground('custom');
+    });
+
+    /* ──────────────────────────────── */
+    /* DRAG & DROP IMAGE */
+    /* ──────────────────────────────── */
+
+    const previewImg = document.getElementById('preview-image');
+    const previewPlaceholder = document.getElementById('preview-placeholder');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        previewArea.addEventListener(eventName, e => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    });
+
+    previewArea.addEventListener('dragover', () => {
+        previewArea.classList.add('dragover');
+    });
+
+    previewArea.addEventListener('dragleave', () => {
+        previewArea.classList.remove('dragover');
+    });
+
+    previewArea.addEventListener('drop', e => {
+        previewArea.classList.remove('dragover');
+
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+
+        const allowed = ['image/svg+xml', 'image/png'];
+        if (!allowed.includes(file.type)) {
+            alert('Please drop an SVG or PNG file.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = event => {
+            previewImg.src = event.target.result;
+            previewImg.style.display = 'block';
+            previewPlaceholder.style.display = 'none';
+            drawRulers();
+        };
+        reader.readAsDataURL(file);
+    });
+
+let centerlinesVisible = true;
+
+document.querySelectorAll('#centerline-chips .chip').forEach(chip => {
   chip.addEventListener('click', () => {
-    document.querySelectorAll('#ruler-unit-chips .chip')
+    document.querySelectorAll('#centerline-chips .chip')
       .forEach(c => c.classList.remove('active'));
 
     chip.classList.add('active');
-    rulerUnit = chip.dataset.unit;
+    centerlinesVisible = chip.dataset.center === 'on';
 
-    drawRulers();
+    document.querySelector('.centerline-vertical').style.display =
+      centerlinesVisible ? 'block' : 'none';
+
+    document.querySelector('.centerline-horizontal').style.display =
+      centerlinesVisible ? 'block' : 'none';
   });
 });
 
-/* ──────────────────────────────── */
-/* BACKGROUND CHIPS */
-/* ──────────────────────────────── */
 
-const bgChips = document.querySelectorAll('#background-chips .chip');
-const previewArea = document.getElementById('preview-area');
-const customInput = document.getElementById('custom-bg-input');
+    /* ──────────────────────────────── */
+    /* RULERS */
+    /* ──────────────────────────────── */
 
-function activateChip(mode) {
-    bgChips.forEach(c => c.classList.remove('active'));
-    const chip = document.querySelector(`.chip[data-bg="${mode}"]`);
-    if (chip) chip.classList.add('active');
-}
+    const previewWrapper = document.querySelector('.preview-ruler-wrapper');
+    const hRuler = document.getElementById('ruler-h');
+    const vRuler = document.getElementById('ruler-v');
+    const corner = document.querySelector('.ruler-corner');
 
-function applyBackground(mode) {
-    previewArea.classList.remove('bg-light', 'bg-mid', 'bg-dark');
-    previewArea.style.background = '';
+    function drawRulers() {
+        const rect = previewArea.getBoundingClientRect();
+        const wrap = previewWrapper.getBoundingClientRect();
 
-    if (mode === 'light') previewArea.classList.add('bg-light');
-    if (mode === 'mid') previewArea.classList.add('bg-mid');
-    if (mode === 'dark') previewArea.classList.add('bg-dark');
+        const x = rect.left - wrap.left;
+        const y = rect.top - wrap.top;
 
-    if (mode === 'custom') {
-        const val = customInput.value.trim();
-        if (/^#([0-9A-Fa-f]{3}){1,2}$/.test(val)) {
-            previewArea.style.background = val;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        /* Position rulers hugging preview */
+        hRuler.style.left = x + 'px';
+        hRuler.style.top = (y - 20) + 'px';
+        hRuler.style.width = rect.width + 'px';
+
+        vRuler.style.left = (x - 20) + 'px';
+        vRuler.style.top = y + 'px';
+        vRuler.style.height = rect.height + 'px';
+
+        corner.style.left = (x - 20) + 'px';
+        corner.style.top = (y - 20) + 'px';
+
+        hRuler.innerHTML = '';
+        vRuler.innerHTML = '';
+
+        const increment = 10;
+        const major = 50;
+        const labelStep = 100;
+
+        /* Horizontal ruler: center = 0 */
+        for (let i = 0; i < rect.width; i += increment) {
+            const tick = document.createElement('div');
+            tick.classList.add('tick', i % major === 0 ? 'major' : 'minor');
+            tick.style.left = i + 'px';
+            hRuler.appendChild(tick);
+
+            if (i % labelStep === 0) {
+                const label = document.createElement('div');
+                label.classList.add('ruler-label');
+                label.style.left = i + 'px';
+
+                const value = i - centerX; // center-based
+                label.textContent = rulerUnit === 'px' ?
+                    value :
+                    Math.round(value / window.devicePixelRatio);
+
+                hRuler.appendChild(label);
+            }
+        }
+
+        /* Vertical ruler: center = 0 */
+        for (let i = 0; i < rect.height; i += increment) {
+            const tick = document.createElement('div');
+            tick.classList.add('tick', i % major === 0 ? 'major' : 'minor');
+            tick.style.top = i + 'px';
+            vRuler.appendChild(tick);
+
+            if (i % labelStep === 0) {
+                const label = document.createElement('div');
+                label.classList.add('ruler-label-vertical');
+                label.style.top = i + 'px';
+
+                const value = i - centerY; // center-based
+                label.textContent = rulerUnit === 'px' ?
+                    value :
+                    Math.round(value / window.devicePixelRatio);
+
+                vRuler.appendChild(label);
+            }
         }
     }
-}
-
-bgChips.forEach(chip => {
-    chip.addEventListener('click', () => {
-        const mode = chip.dataset.bg;
-        activateChip(mode);
-        applyBackground(mode);
-    });
-});
-
-customInput.addEventListener('input', () => {
-    activateChip('custom');
-    applyBackground('custom');
-});
-
-/* ──────────────────────────────── */
-/* DRAG & DROP IMAGE */
-/* ──────────────────────────────── */
-
-const previewImg = document.getElementById('preview-image');
-const previewPlaceholder = document.getElementById('preview-placeholder');
-
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-  previewArea.addEventListener(eventName, e => {
-    e.preventDefault();
-    e.stopPropagation();
-  });
-});
-
-previewArea.addEventListener('dragover', () => {
-  previewArea.classList.add('dragover');
-});
-
-previewArea.addEventListener('dragleave', () => {
-  previewArea.classList.remove('dragover');
-});
-
-previewArea.addEventListener('drop', e => {
-  previewArea.classList.remove('dragover');
-
-  const file = e.dataTransfer.files[0];
-  if (!file) return;
-
-  const allowed = ['image/svg+xml', 'image/png'];
-  if (!allowed.includes(file.type)) {
-    alert('Please drop an SVG or PNG file.');
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = event => {
-    previewImg.src = event.target.result;
-    previewImg.style.display = 'block';
-    previewPlaceholder.style.display = 'none';
-    drawRulers();
-  };
-  reader.readAsDataURL(file);
-});
-
-/* ──────────────────────────────── */
-/* RULERS */
-/* ──────────────────────────────── */
-
-const previewWrapper = document.querySelector('.preview-ruler-wrapper');
-const hRuler = document.getElementById('ruler-h');
-const vRuler = document.getElementById('ruler-v');
-const corner = document.querySelector('.ruler-corner');
-
-function drawRulers() {
-  const rect = previewArea.getBoundingClientRect();
-  const wrap = previewWrapper.getBoundingClientRect();
-
-  const x = rect.left - wrap.left;
-  const y = rect.top - wrap.top;
-
-  hRuler.style.left = x + 20 + 'px';
-  hRuler.style.top = y + 'px';
-  hRuler.style.width = rect.width + 'px';
-
-  vRuler.style.left = x + 'px';
-  vRuler.style.top = y + 20 + 'px';
-  vRuler.style.height = rect.height + 'px';
-
-  corner.style.left = x + 'px';
-  corner.style.top = y + 'px';
-
-  hRuler.innerHTML = '';
-  vRuler.innerHTML = '';
-
-  const increment = 10;
-  const major = 50;
-  const labelStep = 100;
-
-  for (let i = 0; i < rect.width; i += increment) {
-    const tick = document.createElement('div');
-    tick.classList.add('tick', i % major === 0 ? 'major' : 'minor');
-    tick.style.left = i + 'px';
-    hRuler.appendChild(tick);
-
-    if (i % labelStep === 0) {
-      const label = document.createElement('div');
-      label.classList.add('ruler-label');
-      label.style.left = i + 'px';
-      label.textContent = rulerUnit === 'px'
-        ? i
-        : Math.round(i / window.devicePixelRatio);
-      hRuler.appendChild(label);
-    }
-  }
-
-  for (let i = 0; i < rect.height; i += increment) {
-    const tick = document.createElement('div');
-    tick.classList.add('tick', i % major === 0 ? 'major' : 'minor');
-    tick.style.top = i + 'px';
-    vRuler.appendChild(tick);
-
-    if (i % labelStep === 0) {
-      const label = document.createElement('div');
-      label.classList.add('ruler-label-vertical');
-      label.style.top = i + 'px';
-      label.textContent = rulerUnit === 'px'
-        ? i
-        : Math.round(i / window.devicePixelRatio);
-      vRuler.appendChild(label);
-    }
-  }
-}
-
-window.addEventListener('load', drawRulers);
-window.addEventListener('resize', drawRulers);
 
 
+    window.addEventListener('load', drawRulers);
+    window.addEventListener('resize', drawRulers);
     </script>
 </body>
 
