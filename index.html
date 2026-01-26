@@ -233,11 +233,6 @@ font-weight: 800;
   letter-spacing: 0.5px;
 }
 
-/* Remove the default section divider line */
-.inspector-group + .inspector-section {
-  border-top: 1px solid #262626;
-}
-
 .inspector {
 padding: 16px 18px;
 background: #151515;
@@ -390,20 +385,25 @@ background: #222;
                         </div>
                     </div>
                 </div>
-                <div class="inspector-section inspector-group">
+                <div class="inspector-section inspector-group" id='adjustments-section'>
                     <div class="section-title">Adjustments</div>
                     <div class="subsection">
-                        <div class="subsection-label">Size</div>
-                        <div class="chips" id="ruler-unit-chips">
-                            <div class="chip active" data-unit="px">Width</div>
-                            <div class="chip" data-unit="dp">Height</div>
+                        <div class="subsection-label">
+                            Adjust by width: <span id="width-value">0</span>px
                         </div>
+                        <input type="range" id="width-slider" min="1" max="2000" value="0" step="1">
+                    </div>
+                    <div class="subsection">
+                        <div class="subsection-label">
+                            Adjust by height: <span id="height-value">0</span>px
+                        </div>
+                        <input type="range" id="height-slider" min="1" max="2000" value="0" step="1">
                     </div>
                     <div class="subsection">
                         <div class="subsection-label">Display Density Simulation</div>
-                        <div class="chips">
-                            <div class="chip active">Low Resolution / LDPI / Soft</div>
-                            <div class="chip">High Resolution / HDPI / Crisp</div>
+                        <div class="chips" id="density-chips">
+                            <div class="chip active" data-dpi="1">LDPI</div>
+                            <div class="chip" data-dpi="2">HDPI</div>
                         </div>
                     </div>
                     <div class="subsection">
@@ -582,6 +582,59 @@ background: #222;
             document.querySelector('.centerline-horizontal').style.display =
                 centerlinesVisible ? 'block' : 'none';
         });
+    });
+
+
+    /* ──────────────────────────────── */
+    /* DENSITY TESTER */
+    /* ──────────────────────────────── */
+
+
+    let densityScale = 1;
+
+    document.querySelectorAll('#density-chips .chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('#density-chips .chip')
+                .forEach(c => c.classList.remove('active'));
+
+            chip.classList.add('active');
+            densityScale = Number(chip.dataset.dpi);
+
+            applyDensityScale();
+        });
+    });
+
+    function applyDensityScale() {
+        if (!previewImg.src) return;
+
+        previewImg.style.transform = `scale(${densityScale})`;
+        previewImg.style.transformOrigin = 'center center';
+
+        drawRulers();
+    }
+
+
+    /* ──────────────────────────────── */
+    /* SIZE SLIDERS */
+    /* ──────────────────────────────── */
+
+    const widthSlider = document.getElementById('width-slider');
+    const heightSlider = document.getElementById('height-slider');
+    const widthValue = document.getElementById('width-value');
+    const heightValue = document.getElementById('height-value');
+
+    widthSlider.addEventListener('input', () => {
+        const w = widthSlider.value;
+        widthValue.textContent = w;
+        previewImg.style.width = w + 'px';
+        drawRulers();
+    });
+
+    heightSlider.addEventListener('input', () => {
+        const h = heightSlider.value;
+        heightValue.textContent = h;
+        previewImg.style.height = h + 'px';
+        drawRulers();
     });
 
 
