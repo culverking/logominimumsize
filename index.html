@@ -173,15 +173,8 @@ font-weight: 800;
 .centerline-vertical,
 .centerline-horizontal {
   position: absolute;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 4px,
-    #666 4px,
-    #666 6px
-  );
   pointer-events: none;
-  z-index: 30; /* above rulers and preview image */
+  z-index: 30;
 }
 
 .centerline-vertical {
@@ -189,6 +182,12 @@ font-weight: 800;
   height: 100%;
   left: 50%;
   transform: translateX(-50%);
+  border-left: 1px dashed rgba(255, 255, 255, 0.25);
+  border-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.25) 0 2px,   /* dash length */
+    transparent 2px 8px            /* gap length */
+  ) 1;
 }
 
 .centerline-horizontal {
@@ -196,12 +195,48 @@ font-weight: 800;
   width: 100%;
   top: 50%;
   transform: translateY(-50%);
+  border-top: 1px solid transparent;
+  border-image: repeating-linear-gradient(
+    to right,
+    rgba(255,255,255,0.25) 0 2px,   /* dash length */
+    transparent 2px 8px            /* gap length */
+  ) 1;
 }
 
 
 
 /* END PREVIEW AREA */
 /* ──────────────────────────────── */
+
+
+/* ──────────────────────────────── */
+/* INSPECTOR PANEL */
+
+/* Grouped inspector section */
+.inspector-group {
+  padding-bottom: 16px;
+}
+
+/* Subsections inside a grouped section */
+.inspector-group .subsection {
+  margin-top: 12px;
+  padding-bottom: 12px;
+}
+
+/* Label for each control group */
+.subsection-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #ccc;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Remove the default section divider line */
+.inspector-group + .inspector-section {
+  border-top: 1px solid #262626;
+}
 
 .inspector {
 padding: 16px 18px;
@@ -319,11 +354,9 @@ background: #222;
         <div class="main">
             <div class="preview">
                 <div class="preview-ruler-wrapper">
-                    <!-- Rulers hugging preview -->
                     <div class="ruler-horizontal" id="ruler-h"></div>
                     <div class="ruler-vertical" id="ruler-v"></div>
                     <div class="ruler-corner"></div>
-                    <!-- Preview box (max 800px) -->
                     <div class="preview-inner" id="preview-area">
                         <div class="centerline-vertical"></div>
                         <div class="centerline-horizontal"></div>
@@ -340,52 +373,51 @@ background: #222;
             </div>
             <div class="divider"></div>
             <aside class="inspector">
-                <div class="inspector-section">
-                    <div class="section-title">Display Density Simulation</div>
-                    <div class="chips">
-                        <div class="chip active">Low Resolution / LDPI / Soft</div>
-                        <div class="chip">High Resolution / HDPI / Crisp</div>
+                <div class="inspector-section inspector-group">
+                    <div class="section-title">View settings</div>
+                    <div class="subsection">
+                        <div class="subsection-label">Ruler Increment</div>
+                        <div class="chips" id="ruler-unit-chips">
+                            <div class="chip active" data-unit="px">CSS Pixels</div>
+                            <div class="chip" data-unit="dp">DPs</div>
+                        </div>
+                    </div>
+                    <div class="subsection">
+                        <div class="subsection-label">Centerlines</div>
+                        <div class="chips" id="centerline-chips">
+                            <div class="chip active" data-center="on">On</div>
+                            <div class="chip" data-center="off">Off</div>
+                        </div>
                     </div>
                 </div>
-                <div class="inspector-section">
-                    <div class="section-title">Ruler Increment</div>
-                    <div class="chips" id="ruler-unit-chips">
-                        <div class="chip active" data-unit="px">CSS Pixels</div>
-                        <div class="chip" data-unit="dp">DPs</div>
+                <div class="inspector-section inspector-group">
+                    <div class="section-title">Adjustments</div>
+                    <div class="subsection">
+                        <div class="subsection-label">Size</div>
+                        <div class="chips" id="ruler-unit-chips">
+                            <div class="chip active" data-unit="px">Width</div>
+                            <div class="chip" data-unit="dp">Height</div>
+                        </div>
                     </div>
-                </div>
-                <div class="inspector-section">
-                    <div class="section-title">Centerlines</div>
-                    <div class="chips" id="centerline-chips">
-                        <div class="chip active" data-center="on">On</div>
-                        <div class="chip" data-center="off">Off</div>
+                    <div class="subsection">
+                        <div class="subsection-label">Display Density Simulation</div>
+                        <div class="chips">
+                            <div class="chip active">Low Resolution / LDPI / Soft</div>
+                            <div class="chip">High Resolution / HDPI / Crisp</div>
+                        </div>
                     </div>
-                </div>
-                <div class="inspector-section">
-                    <div class="section-title">Rendered size</div>
-                    <div class="field">
-                        <label>Physical pixels</label>
-                        <input type="text" value="48 × 48 px @ 2x" readonly />
-                    </div>
-                </div>
-                <div class="inspector-section">
-                    <div class="section-title">Background</div>
-                    <div class="chips" id="background-chips">
-                        <div class="chip active" data-bg="light">Light</div>
-                        <div class="chip" data-bg="mid">Mid</div>
-                        <div class="chip" data-bg="dark">Dark</div>
-                        <div class="chip" data-bg="custom">Custom</div>
-                    </div>
-                    <div class="field" id="custom-bg-field">
-                        <label>Custom Hex</label>
-                        <input type="text" id="custom-bg-input" placeholder="#RRGGBB" />
-                    </div>
-                </div>
-                <div class="inspector-section">
-                    <div class="section-title">Validation</div>
-                    <div class="field">
-                        <label>Result</label>
-                        <input type="text" value="Pass at 24 CSS px / 2x" readonly />
+                    <div class="subsection">
+                        <div class="subsection-label">Background</div>
+                        <div class="chips" id="background-chips">
+                            <div class="chip active" data-bg="light">Light</div>
+                            <div class="chip" data-bg="mid">Mid</div>
+                            <div class="chip" data-bg="dark">Dark</div>
+                            <div class="chip" data-bg="custom">Custom</div>
+                        </div>
+                        <div class="field" id="custom-bg-field">
+                            <label>Custom Hex</label>
+                            <input type="text" id="custom-bg-input" placeholder="#RRGGBB" />
+                        </div>
                     </div>
                 </div>
             </aside>
@@ -534,23 +566,23 @@ background: #222;
         reader.readAsDataURL(file);
     });
 
-let centerlinesVisible = true;
+    let centerlinesVisible = true;
 
-document.querySelectorAll('#centerline-chips .chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    document.querySelectorAll('#centerline-chips .chip')
-      .forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#centerline-chips .chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('#centerline-chips .chip')
+                .forEach(c => c.classList.remove('active'));
 
-    chip.classList.add('active');
-    centerlinesVisible = chip.dataset.center === 'on';
+            chip.classList.add('active');
+            centerlinesVisible = chip.dataset.center === 'on';
 
-    document.querySelector('.centerline-vertical').style.display =
-      centerlinesVisible ? 'block' : 'none';
+            document.querySelector('.centerline-vertical').style.display =
+                centerlinesVisible ? 'block' : 'none';
 
-    document.querySelector('.centerline-horizontal').style.display =
-      centerlinesVisible ? 'block' : 'none';
-  });
-});
+            document.querySelector('.centerline-horizontal').style.display =
+                centerlinesVisible ? 'block' : 'none';
+        });
+    });
 
 
     /* ──────────────────────────────── */
